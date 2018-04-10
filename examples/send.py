@@ -1,38 +1,55 @@
+
 #!/usr/bin/env python
 
-"""
-An example to show receiving events from an Event Hub partition.
-"""
-
-# pylint: disable=C0111
+from __future__ import print_function
 
 import sys
 import logging
 from eventhubs import EventHubClient, Sender, EventData
 
 import examples
-logger = examples.get_logger(logging.INFO)
+from satori.rtm.client import make_client, SubscriptionMode
 
-try:
-    ADDRESS = ("amqps://"
-               "<URL-encoded-SAS-policy>"
-               ":"
-               "<URL-encoded-SAS-key>"
-               "@"
-               "<mynamespace>.servicebus.windows.net"
-               "/"
-               "myeventhub")
+endpoint = "wss://open-data.api.satori.com"
+appkey = undefined
+channel = "Twitter-statuses-sample"
 
-    sender = Sender()
-    client = EventHubClient(ADDRESS if len(sys.argv) == 1 else sys.argv[1]) \
-                 .publish(sender) \
-                 .run_daemon()
+def main():
 
-    for i in range(100):
-        sender.send(EventData(str(i)))
-        logger.info("Send message %d", i)
+    with make_client(endpoint=endpoint, appkey=appkey) as client:
+        print('Connected to Satori RTM!')
 
-    client.stop()
+        class SubscriptionObserver(object):
+            def on_subscription_data(self, data):
+                ADDRESS = ("amqps://"
+                       "send"
+                       ":"
+                       "RJQLhw9Uu8qHL0KZQkb0dd+4didTvGqIzJZljtP5m/s="
+                       "@"
+                       "structstreaming.servicebus.windows.net"
+                       "/"
+                       "twitter")
+                sender = Sender()
+                azClient = EventHubClient(ADDRESS if len(sys.argv) == 1 else sys.argv[1]) \
+                             .publish(sender) \
+                             .run_daemon()
 
-except KeyboardInterrupt:
-    pass
+                for message in data['messages']:
+                    sender.send(EventData(str(message)))
+                    print("Got message:", message)
+
+        subscription_observer = SubscriptionObserver()
+        client.subscribe(
+            channel,
+            SubscriptionMode.SIMPLE,
+            subscription_observer)
+
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            pass
+
+
+if __name__ == '__main__':
+    main()
