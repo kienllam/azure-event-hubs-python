@@ -11,7 +11,7 @@ import examples
 from satori.rtm.client import make_client, SubscriptionMode
 
 endpoint = "wss://open-data.api.satori.com"
-appkey = undefined
+appkey = "f20D70e80c62705318Bc3A2D16af7aaE"
 channel = "Twitter-statuses-sample"
 
 def main():
