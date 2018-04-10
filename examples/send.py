@@ -7,7 +7,7 @@ import sys
 import logging
 from eventhubs import EventHubClient, Sender, EventData
 
-import examples
+import time
 from satori.rtm.client import make_client, SubscriptionMode
 
 endpoint = "wss://open-data.api.satori.com"
